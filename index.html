@@ -1551,7 +1551,7 @@ setInterval(()=>{ const el=$('#sync-pill'); if(el&&SY.status==='ok') el.replaceW
 function scheduleSync(ms){ if(!SY.client||!SY.key) return; clearTimeout(SY.timer); SY.timer=setTimeout(()=>syncNow(),ms); }
 /* sync keys look like bwj-k7q9x-p2mlr-4t9vw-cn3hd-8fj2a (125 random bits) */
 function newKey(){ const A='abcdefghijkmnpqrstuvwxyz23456789'; const b=new Uint8Array(25); crypto.getRandomValues(b); let s=''; for(let i=0;i<25;i++){ s+=A[b[i]%32]; if(i%5===4&&i<24) s+='-'; } return 'evv-'+s; }
-function cleanKey(t){ t=String(t||'').trim(); const m=t.match(/bwj-[a-z0-9]{5}(?:-[a-z0-9]{5}){4}/i); return m?m[0].toLowerCase():''; }
+function cleanKey(t){ t=String(t||'').trim(); const m=t.match(/evv-[a-z0-9]{5}(?:-[a-z0-9]{5}){4}/i); return m?m[0].toLowerCase():''; }
 function loadKey(){ try{ return localStorage.getItem('evv-key')||null; }catch(e){ return null; } }
 function storeKey(k){ try{ if(k) localStorage.setItem('evv-key',k); else localStorage.removeItem('evv-key'); }catch(e){} SY.key=k||null; }
 function isBadKey(e){ return /bad key/i.test((e&&e.message)||String(e)); }
@@ -1677,10 +1677,10 @@ function openKeyCreated(k,changed){
 }
 let scanStop=null;
 function openJoin(prefill){
-  const inp=h('input',{class:'field',id:'join-key',placeholder:'bwj-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx','aria-label':'Sync key',autocapitalize:'off',autocomplete:'off',spellcheck:'false',value:prefill||''});
+  const inp=h('input',{class:'field',id:'join-key',placeholder:'evv-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx','aria-label':'Sync key',autocapitalize:'off',autocomplete:'off',spellcheck:'false',value:prefill||''});
   const msg=h('p',{class:'pm-err',hidden:true});
   const cam=h('div',{class:'scan',hidden:true});
-  const connect=async()=>{ const k=cleanKey(inp.value); if(!k){ msg.textContent='That doesn’t look like a sync key. It starts with bwj- and has five groups of letters and numbers.'; msg.hidden=false; return; }
+  const connect=async()=>{ const k=cleanKey(inp.value); if(!k){ msg.textContent='That doesn’t look like a sync key. It starts with evv- and has five groups of letters and numbers.'; msg.hidden=false; return; }
     msg.textContent='Checking…'; msg.hidden=false; msg.style.color='var(--ink-3)';
     try{ const v=await rpc('check_key',{p_key:k}); stopScan(); await useKey(k,v); closeModal(); toast('Connected. Your pages are syncing.'); }
     catch(e){ msg.style.color=''; msg.textContent=isBadKey(e)?'That key doesn’t match. Check it on your other device under Cloud sync → Show sync key.':"Couldn't connect: "+((e&&e.message)||e); } };
