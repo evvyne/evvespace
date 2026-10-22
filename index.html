@@ -1388,7 +1388,7 @@ function defaultState(){
 
 /* ---------- persistence (IndexedDB) ---------- */
 let dbConn=null;
-function idb(){ if(dbConn) return Promise.resolve(dbConn); return new Promise((res,rej)=>{ try{ const r=indexedDB.open('bwjspace',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>{dbConn=r.result;res(dbConn);}; r.onerror=()=>rej(r.error);}catch(e){rej(e);} }); }
+function idb(){ if(dbConn) return Promise.resolve(dbConn); return new Promise((res,rej)=>{ try{ const r=indexedDB.open('evvspace',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>{dbConn=r.result;res(dbConn);}; r.onerror=()=>rej(r.error);}catch(e){rej(e);} }); }
 async function load(){ try{ const d=await idb(); return await new Promise((res)=>{ const q=d.transaction('kv').objectStore('kv').get('state'); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){ return null; } }
 let saveT=null;
 function save(){ if(SHARED){ clearTimeout(saveT); saveT=setTimeout(sharedChanged,300); return; } clearTimeout(saveT); saveT=setTimeout(async()=>{ try{ const d=await idb(); d.transaction('kv','readwrite').objectStore('kv').put(JSON.parse(JSON.stringify(S)),'state'); }catch(e){} if(autoDepth===0) detectChanges(false); },300); }
@@ -1540,7 +1540,7 @@ function takeRemote(row){
   if(m.u>row.updated){ m.b=row.updated; SY.again=true; return false; }   // ours is newer: keep it and upload again
   applyRemote(row); return true;
 }
-function syncConfig(){ const c=window.BWJ_CONFIG||{}; let o={}; try{ o=JSON.parse(localStorage.getItem('bwj-sb')||'{}'); }catch(e){} const url=(o.url||c.supabaseUrl||'').trim(), key=(o.key||c.supabaseAnonKey||'').trim(); return url&&key&&/^https:\/\//.test(url)?{url,key}:null; }
+function syncConfig(){ const c=window.BWJ_CONFIG||{}; let o={}; try{ o=JSON.parse(localStorage.getItem('evv-sb')||'{}'); }catch(e){} const url=(o.url||c.supabaseUrl||'').trim(), key=(o.key||c.supabaseAnonKey||'').trim(); return url&&key&&/^https:\/\//.test(url)?{url,key}:null; }
 function setStatus(s,err){ SY.status=s; SY.err=err||''; const el=$('#sync-pill'); if(el) el.replaceWith(syncPill()); }
 function syncPill(){
   const map={off:['cloud-off','Sync not set up'],nokey:['cloud-off','Set up sync'],syncing:['refresh','Syncing…'],ok:['cloud','Synced'+(SY.last?' · '+ago(SY.last):'')],offline:['cloud-off','Offline · saved here'],error:['cloud-off','Sync paused'],badkey:['cloud-off','Sync key changed']};
@@ -1550,10 +1550,10 @@ function syncPill(){
 setInterval(()=>{ const el=$('#sync-pill'); if(el&&SY.status==='ok') el.replaceWith(syncPill()); },60000);
 function scheduleSync(ms){ if(!SY.client||!SY.key) return; clearTimeout(SY.timer); SY.timer=setTimeout(()=>syncNow(),ms); }
 /* sync keys look like bwj-k7q9x-p2mlr-4t9vw-cn3hd-8fj2a (125 random bits) */
-function newKey(){ const A='abcdefghijkmnpqrstuvwxyz23456789'; const b=new Uint8Array(25); crypto.getRandomValues(b); let s=''; for(let i=0;i<25;i++){ s+=A[b[i]%32]; if(i%5===4&&i<24) s+='-'; } return 'bwj-'+s; }
+function newKey(){ const A='abcdefghijkmnpqrstuvwxyz23456789'; const b=new Uint8Array(25); crypto.getRandomValues(b); let s=''; for(let i=0;i<25;i++){ s+=A[b[i]%32]; if(i%5===4&&i<24) s+='-'; } return 'evv-'+s; }
 function cleanKey(t){ t=String(t||'').trim(); const m=t.match(/bwj-[a-z0-9]{5}(?:-[a-z0-9]{5}){4}/i); return m?m[0].toLowerCase():''; }
-function loadKey(){ try{ return localStorage.getItem('bwj-key')||null; }catch(e){ return null; } }
-function storeKey(k){ try{ if(k) localStorage.setItem('bwj-key',k); else localStorage.removeItem('bwj-key'); }catch(e){} SY.key=k||null; }
+function loadKey(){ try{ return localStorage.getItem('evv-key')||null; }catch(e){ return null; } }
+function storeKey(k){ try{ if(k) localStorage.setItem('evv-key',k); else localStorage.removeItem('evv-key'); }catch(e){} SY.key=k||null; }
 function isBadKey(e){ return /bad key/i.test((e&&e.message)||String(e)); }
 async function rpc(name,args){ const {data,error}=await SY.client.rpc(name,args); if(error) throw error; return data; }
 async function pullAll(){
@@ -1645,7 +1645,7 @@ function openSync(){
   if(!cfg||!SY.client){
     body.push(h('p',{class:'muted',style:{margin:0}},window.supabase?'Cloud sync is not set up yet. Add your Supabase Project URL and anon key in config.js, or paste them here.':'Cloud sync works on the version you put on GitHub Pages. This preview keeps your pages on this device only.'));
     if(window.supabase){ const u=h('input',{class:'field',id:'sb-url',placeholder:'https://xxxx.supabase.co','aria-label':'Project URL'}), k=h('input',{class:'field',id:'sb-key',placeholder:'anon public key','aria-label':'Anon key'});
-      body.push(h('label',{class:'pm-f'},h('span',{class:'pm-l'},'Project URL'),u),h('label',{class:'pm-f'},h('span',{class:'pm-l'},'Anon public key'),k),h('div',{class:'row',style:{justifyContent:'flex-end'}},h('button',{class:'btn pri',onclick:()=>{ if(!/^https:\/\//.test(u.value.trim())||k.value.trim().length<20){ toast('Check the Project URL and key'); return; } try{ localStorage.setItem('bwj-sb',JSON.stringify({url:u.value.trim(),key:k.value.trim()})); }catch(e){} location.reload(); }},'Save and reload'))); }
+      body.push(h('label',{class:'pm-f'},h('span',{class:'pm-l'},'Project URL'),u),h('label',{class:'pm-f'},h('span',{class:'pm-l'},'Anon public key'),k),h('div',{class:'row',style:{justifyContent:'flex-end'}},h('button',{class:'btn pri',onclick:()=>{ if(!/^https:\/\//.test(u.value.trim())||k.value.trim().length<20){ toast('Check the Project URL and key'); return; } try{ localStorage.setItem('evv-sb',JSON.stringify({url:u.value.trim(),key:k.value.trim()})); }catch(e){} location.reload(); }},'Save and reload'))); }
   } else if(!SY.key||SY.status==='badkey'){
     const msg=h('p',{class:'pm-err',hidden:true});
     if(SY.status==='badkey') body.push(h('p',{class:'pm-err',style:{margin:0}},'This device’s sync key no longer works. It was probably changed on another device. Enter the new key to keep syncing. Your pages on this device are safe.'));
@@ -1793,8 +1793,8 @@ function openShare(arg){
 
 /* ===== comments (comment links, and you replying) ===== */
 const CM={byPage:{},sum:{},panel:false,focus:null,compose:false,showDone:false,drafts:{},later:false};
-function cmName(){ try{ return localStorage.getItem('bwj-name')||''; }catch(e){ return ''; } }
-function cmSetName(n){ try{ localStorage.setItem('bwj-name',n); }catch(e){} }
+function cmName(){ try{ return localStorage.getItem('evv-name')||''; }catch(e){ return ''; } }
+function cmSetName(n){ try{ localStorage.setItem('evv-name',n); }catch(e){} }
 function cmWho(){ return SHARED?(cmName()||'Guest'):(S.settings.name||'Owner'); }
 function canComment(p){ if(!p) return false; if(SHARED) return SHARED.perm==='comment'||SHARED.perm==='edit'; return !!(SY.client&&SY.key&&(p.share||(CM.byPage[p.id]||[]).length)); }
 function cmOpenList(pid){ return (CM.byPage[pid]||[]).filter(c=>!c.resolved); }
@@ -4384,7 +4384,7 @@ function openSettings(){
     h('div',{class:'msec'},h('h3',{},'Theme'),seg),
     h('div',{class:'msec'},h('h3',{},'Spaces'),spl,h('button',{class:'btn sm',style:{marginTop:'10px'},onclick:()=>{ const used=S.spaces.map(s=>s.color); S.spaces.push({id:uid(),name:'New space',color:COLORS.find(c=>!used.includes(c))||'teal'}); save(); renderSidebar(); drawSp(); const ins=spl.querySelectorAll('input'); const l=ins[ins.length-1]; if(l){l.focus();l.select();} }},ic('plus',15),'Add space')),
     h('div',{class:'msec'},h('h3',{},'Backup'),h('p',{},'Your pages are saved in this browser on this device. Copy a backup now and then, and paste it here to restore.'),
-      h('div',{class:'row'},h('button',{class:'btn sm',onclick:()=>{ const j=JSON.stringify(S); out.value=j; out.hidden=false; copyText(j); }},ic('copy',14),'Copy backup'),h('button',{class:'btn sm',onclick:()=>{ const j=JSON.stringify(S,null,1); try{ const a=h('a',{href:URL.createObjectURL(new Blob([j],{type:'application/json'})),download:'bwjspace-backup-'+todayStr()+'.json'}); document.body.append(a); a.click(); a.remove(); }catch(_){ } out.value=j; out.hidden=false; }},ic('download',14),'Download file')),out,
+      h('div',{class:'row'},h('button',{class:'btn sm',onclick:()=>{ const j=JSON.stringify(S); out.value=j; out.hidden=false; copyText(j); }},ic('copy',14),'Copy backup'),h('button',{class:'btn sm',onclick:()=>{ const j=JSON.stringify(S,null,1); try{ const a=h('a',{href:URL.createObjectURL(new Blob([j],{type:'application/json'})),download:'evvspace-backup-'+todayStr()+'.json'}); document.body.append(a); a.click(); a.remove(); }catch(_){ } out.value=j; out.hidden=false; }},ic('download',14),'Download file')),out,
       inn,h('div',{class:'row'},h('button',{class:'btn sm',onclick:()=>{ try{ const d=JSON.parse(inn.value); if(!d||!d.pages||!d.spaces) throw 0; S=d; S.ui=S.ui||{open:{},collapsed:{}}; S.settings=S.settings||{name:'',theme:'system'}; migrate(); save(); closeModal(); R={v:'home'}; applyTheme(); renderSidebar(); renderView(); toast('Backup restored'); }catch(_){ msg.textContent='That backup could not be read. Paste the whole text you copied.'; msg.hidden=false; msg.style.color='var(--danger)'; } }},'Restore backup')),msg),
     h('div',{class:'msec'},h('h3',{},'Cloud sync'),h('p',{},SY.key?'This device is syncing with your sync key.':'Keep your phone and computer in sync.'),h('button',{class:'btn sm',onclick:openSync},ic('cloud',14),SY.key?'Sync settings':'Set up sync'),
       SY.key?(()=>{ const n=inlineImageCount(); const st=h('p',{class:'muted',style:{margin:'10px 0 0',fontSize:'13px'}},n?'Photos: '+n+' still inside pages, waiting to move to Storage.':'Photos: all saved in Storage.',IMG.failed?h('span',{style:{display:'block',color:'var(--danger)'}},'Last problem: '+IMG.failed):null);
