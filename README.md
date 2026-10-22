@@ -1,0 +1,178 @@
+# Evvspace
+
+Notes, drawings and a weekly to-do planner that sync between your computer and phone.
+No email, no password: your devices share a private **sync key**.
+
+---
+
+## 设定步骤（照顺序做，大概 15 分钟）
+
+### 第 1 步：Supabase（放资料的云端）
+
+1. 到 **supabase.com** 注册，按 **New project**
+   - Name：`bwjspace`
+   - Database Password：自己设一个，记下来，**不要给任何人**
+   - Region：**Southeast Asia (Singapore)**
+   - Security：**Enable Data API** 打勾、**Automatically expose new tables** 不打勾、**Enable automatic RLS** 打勾
+2. 等它建好（1–2 分钟）
+3. 左边 **SQL Editor** → **New query** → 把 `supabase-setup.sql` 整份内容贴进去 → **Run**，看到 Success 就好
+4. 左边 **Project Settings** → **API**，复制这两个：
+   - **Project URL**（像 `https://abcdefgh.supabase.co`）
+   - **anon public** key（很长的一串）
+
+   不要复制 **service_role** key。
+
+### 第 2 步：GitHub（放网页）
+
+1. 到 **github.com** → 右上角 **+** → **New repository**
+   - 名字：`bwjspace`
+   - 选 **Public**（免费的 GitHub Pages 需要 Public。别人看得到的只是程式，看不到你的资料）
+   - 按 **Create repository**
+2. 按 **uploading an existing file**，把这个资料夹里**全部档案**拖进去 → **Commit changes**
+3. 如果 `config.js` 还是空的：点 `config.js` → 右上角铅笔 ✏️，把第 1 步的两个值贴进引号里 → **Commit changes**
+   ```js
+   supabaseUrl: "https://abcdefgh.supabase.co",
+   supabaseAnonKey: "eyJ......"
+   ```
+4. **Settings** → 左边 **Pages** → Source 选 **Deploy from a branch** → Branch 选 **main**、资料夹 **/(root)** → **Save**
+5. 等 1–2 分钟，上面会出现你的网址，像 `https://你的帐号.github.io/bwjspace/`
+
+### 第 3 步：电脑（第一台装置）
+
+1. 打开你的 GitHub 网址
+2. 左边下面按 **Set up sync** → **This is my first device**
+3. 画面会出现你的**同步密钥**（像 `bwj-k7q9x-p2mlr-4t9vw-cn3hd-8fj2a`）和一个 QR code
+4. 按 **Copy key**，把密钥存到备忘录或密码管理器
+5. 左下角变成 **Synced** 就完成了
+
+### 第 4 步：手机
+
+1. 用手机打开同一个网址
+2. **先加到主画面**：
+   - iPhone（Safari）：分享按钮 → **加入主画面**
+   - Android（Chrome）：右上角 ⋮ → **加到主画面 / 安装应用程式**
+3. **从主画面的 Evvspace 图示打开**，按 **Set up sync** → **I already have a key**
+4. 按 **Scan QR code** 扫电脑上的 QR code，或者把密钥贴进去 → **Connect**
+   （在电脑上再看到 QR code：左下角同步状态 → **Show sync key / add a device**）
+5. 手机会自动拿掉自己的范例，换成电脑上的资料
+
+之后每台装置都会一直连着，不用再输入。
+
+### 换密钥
+
+觉得密钥可能被别人看到：任何一台装置 → 左下角同步状态 → **Change sync key**（按两次确认）。
+旧密钥马上失效，资料不会动。其他装置会显示 **Sync key changed**，按它再扫一次新的 QR code 就好。
+
+### 分享一页给别人
+
+1. 打开要分享的那一页，按右上角 **Share**
+2. 打开 **Share with a link**
+3. **Anyone with the link can**：选 **View**（只能看）、**Comment**（可以看和留言）或 **Edit**（可以改、加内容和留言）
+   - 选 Comment 或 Edit 时，可以在 **Link for** 写对方名字（例如 Mr Tan），对方打开就不用再输入名字
+4. 要不要连底下的子页面一起分享：勾或不勾 **Include sub-pages**
+5. 按 **Copy**，把连结传给对方
+
+- 对方不用装 App、不用密钥，打开连结就能用
+- 对方**看不到你其他的页面，也拿不到你的同步密钥**
+- 选 Edit 时，对方可以改和加内容，但**不能删除或移动整页**，也不能新增页面（Supabase 那边会挡住）
+- 你随时可以改成 View 或 Edit，对方重新整理就会生效
+- 每台装置要用同一个版本：⚙ Settings 最下面可以看到版本号。GitHub 有新版本时，App 会提示 **Reload**
+- 关掉 **Share with a link**，连结马上失效。再打开会是一个新的连结
+- 分享中的页面，在 sidebar 会有一个小小的人像图示
+- 两个人可以同时编辑：改不同段落会自动合并，改到同一段会两个版本都留着让你挑
+
+### 分享整个 space，或一页和它的子页面
+
+- 在 sidebar 的 space 名字旁边按 **⋯ → Share this space…**，就可以用一个连结分享整个 space
+- 在 **Which pages they can open** 勾要给对方看的页面，没勾的页面对方看不到。分享一页时，它的子页面也可以一个一个选
+- **New pages I add … are shared too**：打开的话，你之后新加的页面会自动分享；关掉的话（默认），新页面要你自己去勾
+- 对方打开连结后，左边会有一个小列表，只列出你分享的页面，可以点来换页
+- 要用这个功能，`supabase-setup.sql` 要在 Supabase 再跑一次
+
+### 页面历史记录
+
+- 页面右上角 **⋯ → Page history**：看到这一页最近 10 天的版本，谁改的、改了什么
+- 点一个旧版本可以看那时候的样子（绿色 = 会回来，红色划掉 = 会拿掉），按 **Restore this version** 还原，下面有 **Undo**
+- 同一个人 10 分钟内的修改会合成一个版本
+
+### 内容排程板
+
+- 新增页面时选 **Content board**：Idea → Filming → Editing → Posted，可以拖卡片或按卡片下面的按钮换阶段
+- 上面可以选平台，也可以换成 **Calendar** 看
+- 点一张卡片：电脑会在右边打开侧栏，手机会弹出一张卡片。阶段和平台直接点按钮选，日期直接打字，下面写 caption
+- 点 **Edit stages / Edit platforms** 可以加、改名、换颜色、拖 ⋮⋮ 换顺序、删掉。删掉还有 post 的阶段时，会先问要把 post 搬去哪里
+- 平台也可以在卡片里按 **+ Add** 直接加
+- 在 **Calendar** 点 post 也会打开侧栏（手机是弹出卡片）
+
+### Studio calendar 和 Invoices
+
+- 在 Studio 按 **+** 新增页面，选 **Studio calendar**。电脑可以用周（Week）或月（Month）看，手机一天一天往下看
+- 按 **New booking**，或直接点日历上空的时间。可以选 Status、日期、开始时间、套餐（3 / 6 / 12 / 24 小时）、Extra hours（RM 250 一小时）、Client、WhatsApp、订金和 notes
+- WhatsApp 写电话号码的话，按 **Chat** 会直接打开 WhatsApp
+- 按 **Make invoice →** 会自动开一张 invoice（第一次会自动建好 **Invoices** 页面）
+- Invoice 号码会照最新那张自动加 1。你改号码的话，下一张就照你改的号码继续加。号码重复的话会提醒你
+- Due date 默认是开单后 7 天。勾 **Minus deposit paid** 才会显示 Subtotal / Deposit paid / Balance due，没勾就只有一行 TOTAL
+- **Download PDF** 会打开打印画面，选 "Save as PDF" 就好，档名会是 "R00005 - 客户名字"
+- **Send on WhatsApp** 会打开 WhatsApp，附上金额、due date 和银行资料的讯息（PDF 要自己附上）
+- **Edit template** 可以改 logo、公司地址、银行资料、7 条 terms 和上一张的号码
+- Invoice 改成 **Paid**，那个 booking 在日历上也会变成 Paid（绿色）
+
+### Database 表格
+
+- 表格里的选项格（例如 Category）点一下会弹出一排按钮，点一个就选好
+- 表格每行最右边的 ↗ 会打开侧栏（手机是弹出卡片），可以直接改每一栏
+- **Properties** 里的选项会显示成彩色小标签，按 **Edit options →** 可以加、改名、换颜色、拖顺序、删掉
+- 栏位类型（Text / Select / Date…）改成一格一格的选
+
+### Sidebar
+
+- 鼠标移到页面上会出现 **⋯**（手机一直显示，电脑也可以按右键）：Rename、Duplicate、Delete
+- 手机上：长按页面名字大约半秒，等它浮起来再拖。放在两页中间就排在那里，放在某一页上面就变成它的 sub-page，放在 space 名字上就搬去那个 space
+- Delete 要按两次才会删，删了会放进 Trash，下面有 **Undo** 可以马上救回来。有 sub-page 的话会一起放进 Trash
+
+### 照片
+
+- 新加的照片会自动搬到 Supabase Storage（你的私人资料夹），页面会比较轻、同步比较快。以前的照片也会慢慢自动搬过去
+- 没网路时照片先存在页面里，有网路后才搬
+
+### 留言（Comment）
+
+- 对方第一次打开 Comment 连结会先输入名字（只要一次）。点一行字，或旁边的 💬，就可以留言；也可以留言给整页
+- 你那边：有留言的那一行会有黄色底线和数字，sidebar 的页面旁边会有黄色数字。按页面上方的 **Comments** 打开留言栏，可以回复、**Resolve**（完成）或删除
+- 留言是另外存的，不会影响页面内容和同步
+- 要用留言功能，`supabase-setup.sql` 要在 Supabase 再跑一次（2026-10-19 更新）
+
+---
+
+## 资料是怎么保护的
+
+- **一笔一笔同步，不会整份盖掉**：每一页笔记、每一个 to-do、每一个重复设定都是分开的一笔
+- **只有你亲手改的才算「新」**：App 打开时自动做的整理（更新旧格式、把没做完的 to-do 搬到今天、产生重复的 to-do）不会改「最后修改时间」，也不会上传。所以很久没开的手机或旧分页，不会假装自己是最新的
+- **旧装置不能盖掉新资料**：每一笔都记得自己是从云端哪个版本改出来的。云端如果已经被别的装置改过，旧装置上传会被拒绝
+- **两边同时改同一页**：会一段一段自动合并。你改第 1 段、对方改第 5 段，两边的修改都会保留；两边新加的段落也都会保留
+- **两边同时改同一段**：那一段的两个版本都会留在页面上，用黄色标出来。按其中一个的 **Keep this one**，另一个就会拿掉
+- **分享的页面开着时，每 5 秒自动更新一次**，你会看到对方刚改的内容，打字的时候不会被打断
+- **两边都改了同一个 to-do**：以真正最后一次修改的为准
+- **删掉的不会复活**：删除会被记住
+- **没网路也能用**：先存在装置上，有网路时自动上传
+- **每天自动备份**：每台装置每天存一份，保留 7 天。⚙ Settings → **Automatic backups** 可以还原
+- **Start over（清除资料）只清这台装置**，这台装置会停止同步，云端的资料不会被删
+- **密钥不会存在云端**：资料库只存密钥的「指纹」。就算有人看到资料库，也拿不到你的密钥，而且没有密钥就读不到任何资料
+
+## 要知道的事
+
+- **密钥要保管好**：有密钥的人就能打开你的 Evvspace。如果所有装置同时弄丢，又没有存密钥，资料就拿不回来
+- Supabase 免费方案的 project 如果大约一个星期完全没人用会暂停，资料不会不见，到 Supabase 后台按 **Restore** 就好。每天在用就不会遇到
+- 以后要更新 App：到 GitHub 用新的档案取代旧的就好（`config.js` 不用换）。如果 `supabase-setup.sql` 也有更新，到 SQL Editor 整份再跑一次（可以重复跑，资料不会受影响）
+
+## 档案说明
+
+| 档案 | 用途 |
+|---|---|
+| `index.html` | App 本身 |
+| `config.js` | 你的 Supabase 网址和 key |
+| `supabase.js`, `591.supabase.js` | 连接 Supabase 的程式库 |
+| `qr.js` | 产生和扫描 QR code |
+| `sw.js` | 让 App 没网路也能打开 |
+| `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.png` | 主画面和浏览器分页的名字和图示 |
+| `supabase-setup.sql` | 在 Supabase 跑一次，建立资料表和安全规则 |
