@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Evvspace</title>
-<meta name="description" content="Evvspace: notes, drawings and a weekly to-do planner.">
+<title>Evvespace</title>
+<meta name="description" content="Evvespace: notes, drawings and a weekly to-do planner.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Evvspace">
+<meta name="apple-mobile-web-app-title" content="Evvespace">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F9F4EC">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
@@ -368,6 +368,7 @@ hr.div{flex:1;border:0;border-top:1px solid var(--line-2);margin:14px 0}
 .tbul i{width:7px;height:7px;border-radius:50%;background:var(--ink-2);display:block;transition:transform .12s,background .12s}
 .tbul:hover i{background:var(--accent);transform:scale(1.35)}
 .tbul.on i{background:var(--accent)}
+.tbul.plain{cursor:default}.tbul.plain:hover i{background:var(--ink-2);transform:none}
 .tbul:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .task.fading{opacity:.25;transition:opacity .8s}
 .tfoot{display:flex;align-items:center;gap:10px}
@@ -393,6 +394,11 @@ hr.div{flex:1;border:0;border-top:1px solid var(--line-2);margin:14px 0}
 .tadd:hover{background:var(--hover);color:var(--ink-2)}
 .tadd-row{padding:3px 0 4px 4px}
 .tinput{width:100%;height:32px;border:1px solid var(--accent);border-radius:7px;padding:0 8px;background:var(--surface);outline:none;font-size:14px;min-width:0}
+.dz-to{box-shadow:inset 0 0 0 2px var(--accent)!important;border-radius:12px}
+.mc.dz-to{border-radius:0}
+.tline{position:relative;height:3px;margin:20px 4px 20px 12px;border-radius:3px;background:var(--accent);pointer-events:none;animation:tl-in .15s ease-out}
+.tline::before{content:'';position:absolute;left:-6px;top:-4px;width:11px;height:11px;border-radius:50%;background:var(--accent)}
+@keyframes tl-in{from{margin-top:0;margin-bottom:0}}
 .tghost{position:fixed;z-index:95;pointer-events:none;background:var(--surface);box-shadow:var(--shadow);border-radius:8px;opacity:.95}
 
 .wk-act{display:flex;flex-wrap:wrap;gap:6px}
@@ -1183,7 +1189,7 @@ select.cell{appearance:auto;cursor:pointer}
   <main id="main">
     <div class="topbar">
       <button class="icon-btn" id="tb-menu" aria-label="Open sidebar"></button>
-      <div class="tb-t" id="tb-title">Evvspace</div>
+      <div class="tb-t" id="tb-title">Evvespace</div>
       <button class="icon-btn" id="tb-search" aria-label="Search"></button>
     </div>
     <div id="view"></div>
@@ -1285,9 +1291,11 @@ const fmtLong=s=>parseYmd(s).toLocaleDateString('en-GB',{weekday:'long',day:'num
 const fmtShort=s=>parseYmd(s).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 const fmtMonth=s=>parseYmd(s).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
 function ago(t){const s=(Date.now()-t)/1000; if(s<60)return 'just now'; if(s<3600)return Math.floor(s/60)+' min ago'; if(s<86400)return Math.floor(s/3600)+' h ago'; const d=Math.floor(s/86400); return d===1?'yesterday':d+' days ago';}
-const APP_VER='2026.10.22-1';
+const APP_VER='2026.10.24-1';
+// Evvespace to-dos: plain dots (no done), menu = Edit/Delete, Enter while editing adds a line below. Evvspace sets this to false.
+const TODO_SIMPLE=false;
 /* tell you when a newer version is on GitHub, so every device runs the same version */
-async function checkUpdate(){ if(location.protocol!=='https:') return; try{ const t=await (await fetch('index.html',{cache:'no-store'})).text(); const m=t.match(/APP_VER='([^']+)'/); if(m&&m[1]!==APP_VER&&!checkUpdate.shown){ checkUpdate.shown=true; toast('A new version of Evvspace is ready.',{label:'Reload',stay:true,fn:()=>location.reload()}); } }catch(e){} }
+async function checkUpdate(){ if(location.protocol!=='https:') return; try{ const t=await (await fetch('index.html',{cache:'no-store'})).text(); const m=t.match(/APP_VER='([^']+)'/); if(m&&m[1]!==APP_VER&&!checkUpdate.shown){ checkUpdate.shown=true; toast('A new version of Evvespace is ready.',{label:'Reload',stay:true,fn:()=>location.reload()}); } }catch(e){} }
 setTimeout(checkUpdate,4000); setInterval(()=>{ if(!document.hidden) checkUpdate(); },10*60000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
 const COLORS=['teal','coral','violet','blue','rose','slate','amber','green','red','orange','mustard','olive','sky','navy','purple','plum','pink','brown','sand','charcoal'];
 const PALETTE=['red','coral','orange','amber','mustard','olive','green','teal','sky','blue','navy','violet','purple','plum','rose','pink','brown','sand','slate','charcoal'];
@@ -1358,7 +1366,7 @@ function defaultState(){
     {id:'sp-studio',name:'Studio',color:'teal'},{id:'sp-social',name:'Social Media',color:'coral'},{id:'sp-ai',name:'AI Edit',color:'violet'},
     {id:'sp-personal',name:'Personal',color:'blue'},{id:'sp-rel',name:'Relationship',color:'rose'}],
     pages:{},tasks:exampleTasks(),ui:{open:{},collapsed:{}}};
-  const w=newPage({space:'sp-personal',title:'Welcome to Evvspace',icon:'👋',blocks:[
+  const w=newPage({space:'sp-personal',title:'Welcome to Evvespace',icon:'👋',blocks:[
     blk('p','This is your own workspace. Everything here can be edited or deleted.'),
     blk('h2','Try these'),
     blk('todo','Type <b>/</b> on an empty line and pick <b>Drawing</b>',{checked:false}),
@@ -1638,7 +1646,7 @@ function qrSvg(text){ if(typeof window.qrcode!=='function') return null; const q
 function keyCard(k){
   const q=qrSvg(joinLink(k));
   return h('div',{class:'keycard'},q,h('div',{class:'keytx'},h('code',{class:'skey'},k),h('div',{class:'row'},h('button',{class:'btn sm',onclick:()=>copyText(k)},ic('copy',14),'Copy key'),h('button',{class:'btn sm',onclick:()=>copyText(joinLink(k))},ic('link',14),'Copy link')),
-    h('p',{class:'muted',style:{margin:0}},'On your phone: open Evvspace from the home screen, tap Set up sync → I already have a key, then scan this code or paste the key.')));
+    h('p',{class:'muted',style:{margin:0}},'On your phone: open Evvespace from the home screen, tap Set up sync → I already have a key, then scan this code or paste the key.')));
 }
 function openSync(){
   const cfg=syncConfig(); const body=[];
@@ -1672,7 +1680,7 @@ function openKeyCreated(k,changed){
   modal(changed?'New sync key':'Your sync key',[
     h('p',{style:{margin:0}},changed?'The old key no longer works. Use this one on your other devices.':'This device is now syncing. Use this key to connect your phone or other computers.'),
     keyCard(k),
-    h('p',{class:'pm-err',style:{margin:0,color:'var(--c-amber)'}},'Save the key somewhere safe, like your notes or a password manager. Anyone with it can open your Evvspace. You can see it again later in Cloud sync.'),
+    h('p',{class:'pm-err',style:{margin:0,color:'var(--c-amber)'}},'Save the key somewhere safe, like your notes or a password manager. Anyone with it can open your Evvespace. You can see it again later in Cloud sync.'),
     h('div',{class:'row',style:{justifyContent:'flex-end'}},h('button',{class:'btn pri',onclick:closeModal},'Done'))]);
 }
 let scanStop=null;
@@ -1786,7 +1794,7 @@ function openShare(arg){
       h('div',{class:'row',style:{flexWrap:'nowrap'}},link,h('button',{class:'btn',onclick:()=>copyText(link.value)},ic('copy',14),'Copy')),
       h('p',{class:'muted',style:{margin:0}},isDb?(sh.perm!=='view'?'They can copy and change the cards that are here, but can’t add or delete cards, or see your other pages.':'They can see and copy every card, but can’t change anything or see your other pages.'):(t.space||scope.length>1?'Pages you untick stay private. ':'')+(sh.perm==='edit'?'They can change, add to and comment on these pages, but can’t delete pages or see anything else or your sync key.':sh.perm==='comment'?'They can read and leave comments, but can’t change anything or see anything else.':'They can read, but can’t change anything or see anything else.'))),
       h('p',{class:'muted',style:{margin:0,fontSize:'12.5px'}},'Anyone you give the link to gets this access. If it goes to the wrong person, turn sharing off and on again for a new link.'));
-  } else body.push(h('p',{class:'muted',style:{margin:0}},t.space?'Make one link for this whole space. You choose which of its pages they can open. They won’t see your other spaces.':'Make a link so someone can see this page, or edit it with you. They won’t see anything else in your Evvspace.'));
+  } else body.push(h('p',{class:'muted',style:{margin:0}},t.space?'Make one link for this whole space. You choose which of its pages they can open. They won’t see your other spaces.':'Make a link so someone can see this page, or edit it with you. They won’t see anything else in your Evvespace.'));
   body.push(msg);
   modal('Share “'+name+'”',body);
 }
@@ -2007,7 +2015,7 @@ function sharedMessage(title,sub){ $('#view').replaceChildren(h('div',{class:'do
 function sharedBar(){
   let bar=$('#share-bar'); const edit=SHARED.perm==='edit', com=SHARED.perm==='comment';
   const st=SHARED.busy?'Saving…':SHARED.dirty.size?'Unsaved changes':edit?'All changes saved':com&&cmName()?'Commenting as '+cmName():'';
-  const kids=[ic(edit?'pen':com?'chat':'eye',15),h('span',{},edit?'You can edit this page. Changes are saved for everyone.':com?'You can read and comment. Tap a line, or the speech bubble next to it.':'View only. Shared from Evvspace.'),h('span',{class:'sb-st'},st)];
+  const kids=[ic(edit?'pen':com?'chat':'eye',15),h('span',{},edit?'You can edit this page. Changes are saved for everyone.':com?'You can read and comment. Tap a line, or the speech bubble next to it.':'View only. Shared from Evvespace.'),h('span',{class:'sb-st'},st)];
   if(!bar){ bar=h('div',{class:'share-bar',id:'share-bar',role:'status'}); $('#main').prepend(bar); }
   bar.className='share-bar '+(edit?'edit':com?'comment':'view'); bar.replaceChildren(...kids);
 }
@@ -2180,7 +2188,7 @@ function renderSidebar(){ if(SHARED) return;
       h('button',{class:'ni',onclick:addSpace},ic('plus',15),'Add space'))
   );
   sb.replaceChildren(
-    h('div',{class:'sb-top'},h('div',{class:'logo'},'E'),h('span',{class:'brand'},'Evvspace'),h('button',{class:'icon-btn','aria-label':'Settings',onclick:openSettings},ic('settings',17))),
+    h('div',{class:'sb-top'},h('div',{class:'logo'},'E'),h('span',{class:'brand'},'Evvespace'),h('button',{class:'icon-btn','aria-label':'Settings',onclick:openSettings},ic('settings',17))),
     scroll,
     h('div',{class:'sb-sync'},syncPill()),
     h('div',{class:'sb-foot'},navI('trash','Trash','trash'),h('button',{class:'icon-btn','aria-label':'Switch theme',onclick:cycleTheme},ic(isDark()?'sun':'moon',17))),
@@ -2259,7 +2267,7 @@ function cycleTheme(){ S.settings.theme=isDark()?'light':'dark'; S.settings._set
 function renderView(){
   if(SHARED&&SHARED.waitName) return;
   if(R.v!=='page'&&CM.panel){ CM.panel=false; const cp=$('#cm-panel'); if(cp) cp.remove(); document.body.classList.remove('cm-on'); }
-  const v=$('#view'); let node, title='Evvspace';
+  const v=$('#view'); let node, title='Evvespace';
   if(R.v==='page'){ const p=S.pages[R.id]; if(!p||!alive(p)){ R={v:'home'}; return renderView(); } node=viewPage(p); title=titleOf(p); }
   else if(R.v==='calendar'){ node=viewCalendar(); title='Calendar'; }
   else if(R.v==='review'){ node=viewReview(); title='Weekly review'; }
@@ -2355,9 +2363,9 @@ function taskItem(k,refresh){
   const grip=h('button',{class:'tgrip','aria-label':'Drag to another day',title:'Drag to another day'},ic('grip',14));
   grip.addEventListener('pointerdown',e=>startTaskDrag(e,k,row,refresh));
   // a bullet (default) or a round checkbox; either way tapping it finishes the to-do
-  const cb=k.style==='check'?h('input',{type:'checkbox',class:'chk',checked:!!k.done,'aria-label':'Done: '+k.text}):h('button',{class:'tbul'+(k.done?' on':''),'aria-label':(k.done?'Not done: ':'Done: ')+k.text,'aria-pressed':String(!!k.done)},h('i',{}));
+  const cb=TODO_SIMPLE?h('span',{class:'tbul plain','aria-hidden':'true'},h('i',{})):k.style==='check'?h('input',{type:'checkbox',class:'chk',checked:!!k.done,'aria-label':'Done: '+k.text}):h('button',{class:'tbul'+(k.done?' on':''),'aria-label':(k.done?'Not done: ':'Done: ')+k.text,'aria-pressed':String(!!k.done)},h('i',{}));
   const flip=v=>{ if(v){ setDone(k,true); finishFade(k,row,refresh); } else { setDone(k,false); refresh(); } };
-  if(k.style==='check') cb.addEventListener('change',()=>flip(cb.checked)); else cb.addEventListener('click',()=>flip(!k.done));
+  if(TODO_SIMPLE){} else if(k.style==='check') cb.addEventListener('change',()=>flip(cb.checked)); else cb.addEventListener('click',()=>flip(!k.done));
   const subs=k.subs||[], sd=subs.filter(s=>s.done).length, open=k.open!==false&&!k.done;
   const r=k.recurId&&recurs().find(x=>x.id===k.recurId);
   const meta=[
@@ -2394,9 +2402,16 @@ function editTask(k,row,refresh){
   row.querySelector('.ttx').replaceWith(inp); inp.focus(); inp.select();
   let fin=false;
   const end=commit=>{ if(fin) return; fin=true; const v=inp.value.trim(); if(commit&&!v){ removeTask(k,refresh); return; } if(commit&&v!==k.text){ const pt=parseTime(v); k.text=pt.text; if(pt.time){ k.time=pt.time; placeByTime(k); } syncRule(k); } save(); refresh(); };
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); end(true); } if(e.key==='Escape'){ e.preventDefault(); end(false); } });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); if(TODO_SIMPLE&&inp.value.trim()){ addingDay=k.date||'someday'; addingAfter=k.id; } end(true); focusAdd(); } if(e.key==='Escape'){ e.preventDefault(); end(false); } });
   inp.addEventListener('blur',()=>{ if(inp.isConnected) end(true); });
 }
+// keep the phone keyboard up: focus the new line inside the same tap
+function focusAdd(){ const i=document.querySelector('.tadd-row input'); if(i) i.focus(); }
+// a new to-do typed right after another one goes straight below it
+function newTask(day,list,v){ const pt=parseTime(v); const k={id:uid(),text:pt.text,time:pt.time,date:keyOf(day),done:false,created:Date.now(),order:list.length+1}; tasks().push(k);
+  const at=addingAfter?list.findIndex(x=>x.id===addingAfter):-1; if(at>=0){ const L=list.slice(); L.splice(at+1,0,k); L.forEach((x,j)=>x.order=j); addingAfter=k.id; }
+  placeByTime(k); save(); }
+function placeAdd(box,row){ const t=addingAfter&&box.querySelector(`.tlist [data-task="${addingAfter}"]`); if(!t){ box.append(row); return; } let el=t; while(el.parentElement&&!el.parentElement.classList.contains('tlist')) el=el.parentElement; el.after(row); }
 function removeTask(k,refresh){ const L=tasks(); const i=L.indexOf(k); if(i<0) return; L.splice(i,1); save(); refresh(); toast(k.recurId?'Deleted this one only. It still repeats.':'To-do deleted',{label:'Undo',fn:()=>{ L.splice(i,0,k); save(); refresh(); }}); }
 function moveTask(k,day,refresh,beforeId){
   k.date=keyOf(day); k.carried=false; k.missed=false;
@@ -2413,6 +2428,9 @@ function taskMenu(anchor,k,refresh){
   ti.addEventListener('change',()=>{ k.time=ti.value||null; placeByTime(k); syncRule(k); save(); refresh(); });
   const mv=(d,label)=>({label,icon:'chevr',fn:()=>{ moveTask(k,d,refresh); toast('Moved to '+fmtDay(d)); }});
   const r=k.recurId&&recurs().find(x=>x.id===k.recurId);
+  if(TODO_SIMPLE){ popover(anchor,[
+    {label:'Edit',icon:'pen',fn:()=>{ const row=document.querySelector(`[data-task="${k.id}"]`); if(row) editTask(k,row,refresh); }},
+    {label:k.recurId?'Delete this one':'Delete',icon:'trash',danger:true,fn:()=>removeTask(k,refresh)}]); return; }
   popover(anchor,[
     {title:'Move to'},
     k.date!==t?mv(t,'Today'):null,
@@ -2466,22 +2484,31 @@ function startTaskDrag(e,k,row,refresh){
   row.classList.add('dragging');
   const d={k,dx:e.clientX-r.left,dy:e.clientY-r.top,y:e.clientY,target:null,before:null,moved:false};
   const view=$('#view');
-  const clear=()=>{ document.querySelectorAll('.dz-over').forEach(z=>z.classList.remove('dz-over')); document.querySelectorAll('.task.ins').forEach(x=>x.classList.remove('ins')); };
+  // where it will land: the day gets a teal outline, the list opens a gap with a teal line in it
+  const line=h('div',{class:'tline'}); let zoneEl=null, at;
+  const clear=()=>{ if(zoneEl) zoneEl.classList.remove('dz-to'); zoneEl=null; at=undefined; line.remove(); };
   const move=ev=>{ d.y=ev.clientY; d.moved=true;
     ghost.style.left=(ev.clientX-d.dx)+'px'; ghost.style.top=(ev.clientY-d.dy)+'px';
-    const el=document.elementFromPoint(ev.clientX,ev.clientY); clear();
-    const zone=el&&el.closest('[data-day]'); d.target=zone?zone.dataset.day:null; d.before=null;
-    if(!zone) return; zone.classList.add('dz-over');
-    const it=el.closest('[data-task]');
-    if(it&&it!==row&&zone.contains(it)){ const ir=it.getBoundingClientRect(); let b=ev.clientY<ir.top+ir.height/2?it:it.nextElementSibling; if(b&&b.dataset&&b.dataset.task&&b!==row){ d.before=b.dataset.task; b.classList.add('ins'); } } };
+    const el=document.elementFromPoint(ev.clientX,ev.clientY);
+    const zone=el&&el.closest('[data-day]');
+    if(!zone){ clear(); d.target=null; d.before=null; return; }
+    if(zone!==zoneEl){ clear(); zoneEl=zone; zone.classList.add('dz-to'); }
+    d.target=zone.dataset.day;
+    const list=zone.querySelector('.tlist');
+    if(!list){ d.before=null; return; }
+    const tid=x=>x.dataset&&x.dataset.task||(x.querySelector&&x.querySelector('[data-task]')||{dataset:{}}).dataset.task;
+    const items=[...list.children].filter(x=>x!==line&&tid(x)&&!x.contains(row));
+    const b=items.find(x=>{ const ir=x.getBoundingClientRect(); return ev.clientY<ir.top+ir.height/2; })||null;
+    d.before=b?tid(b):null;
+    if(at!==d.before){ at=d.before; if(b) b.before(line); else list.append(line); } };
   let raf=0; const auto=()=>{ const vr=view.getBoundingClientRect(); if(d.y<vr.top+70) view.scrollTop-=14; else if(d.y>vr.bottom-70) view.scrollTop+=14; raf=requestAnimationFrame(auto); }; raf=requestAnimationFrame(auto);
   const up=ev=>{ cancelAnimationFrame(raf); document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); document.removeEventListener('pointercancel',up);
-    ghost.remove(); row.classList.remove('dragging'); clear();
+    ghost.remove(); row.classList.remove('dragging'); const tgt=d.target, bef=d.before; clear(); d.target=tgt; d.before=bef;
     if(ev.type==='pointercancel'||!d.moved||!d.target) return;
     const changed=keyOf(d.target)!==(k.date||null); moveTask(k,d.target,refresh,d.before); if(changed) toast('Moved to '+fmtDay(d.target)); };
   document.addEventListener('pointermove',move); document.addEventListener('pointerup',up); document.addEventListener('pointercancel',up);
 }
-let addingDay=null;
+let addingDay=null, addingAfter=null;
 function dayColumn(day,refresh,long){
   const t=todayStr(), sd=day==='someday', d=sd?null:parseYmd(day), list=dayTasks(day), open=list.filter(x=>!x.done).length;
   const col=h('section',{class:'day'+(sd?' someday':'')+(day===t?' today':'')+(!sd&&day<t?' past':'')+(list.length?'':' empty'),'data-day':day,'aria-label':sd?'Someday':fmtLong(day)},
@@ -2491,14 +2518,14 @@ function dayColumn(day,refresh,long){
       day===t?h('span',{class:'dtoday'},'Today'):null,
       h('span',{class:'dcount'},list.length?(open?open+' left':'All done'):'')),
     h('div',{class:'tlist'},list.map(k=>taskItem(k,refresh))));
-  const addBtn=()=>h('button',{class:'tadd',onclick:()=>{ addingDay=day; refresh(); }},ic('plus',14),sd?'Add to Someday':'Add to-do');
+  const addBtn=()=>h('button',{class:'tadd',onclick:()=>{ addingDay=day; addingAfter=null; refresh(); }},ic('plus',14),sd?'Add to Someday':'Add to-do');
   if(addingDay===day){
     const inp=h('input',{class:'tinput autofocus',placeholder:sd?'Something to do one day':'New to-do  (try “3pm call studio”)','aria-label':'New to-do for '+(sd?'Someday':fmtLong(day))});
-    const add=v=>{ const pt=parseTime(v); const k={id:uid(),text:pt.text,time:pt.time,date:keyOf(day),done:false,created:Date.now(),order:list.length+1}; tasks().push(k); placeByTime(k); save(); };
+    const add=v=>newTask(day,list,v);
     let closing=false;
-    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); closing=true; const v=inp.value.trim(); if(v){ add(v); refresh(); } else { addingDay=null; refresh(); } } if(e.key==='Escape'){ closing=true; addingDay=null; refresh(); } });
-    inp.addEventListener('blur',()=>{ if(closing||!inp.isConnected) return; closing=true; const v=inp.value.trim(); addingDay=null; if(v){ add(v); refresh(); } else inp.parentNode.replaceWith(addBtn()); });
-    col.append(h('div',{class:'tadd-row'},inp)); setTimeout(()=>{ if(inp.isConnected) inp.focus(); },0);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); closing=true; const v=inp.value.trim(); if(v){ add(v); refresh(); focusAdd(); } else { addingDay=null; addingAfter=null; refresh(); } } if(e.key==='Escape'){ closing=true; addingDay=null; addingAfter=null; refresh(); } });
+    inp.addEventListener('blur',()=>{ if(closing||!inp.isConnected) return; closing=true; const v=inp.value.trim(); addingDay=null; if(v){ add(v); addingAfter=null; refresh(); } else { addingAfter=null; inp.parentNode.replaceWith(addBtn()); } });
+    placeAdd(col,h('div',{class:'tadd-row'},inp)); setTimeout(()=>{ if(inp.isConnected) inp.focus(); },0);
   } else col.append(addBtn());
   return col;
 }
@@ -2508,7 +2535,7 @@ function listDay(day,refresh){
   const open=list.filter(x=>!x.done).length, doneN=list.length-open;
   const past=!sd&&day<t, collapsed=past&&!openPast.has(day), adding=addingDay===day;
   const cnt=past?(list.length?(doneN?doneN+' done':'')+(doneN&&open?' · ':'')+(open?open+' open':''):'No to-dos'):(list.length?(open?open+' left':'All done'):'');
-  const addBtn=(inline)=>h('button',{class:'tadd'+(inline?' inline':''),onclick:()=>{ addingDay=day; if(past) openPast.add(day); refresh(); }},ic('plus',14),sd?'Add to Someday':'Add to-do');
+  const addBtn=(inline)=>h('button',{class:'tadd'+(inline?' inline':''),onclick:()=>{ addingDay=day; addingAfter=null; if(past) openPast.add(day); refresh(); }},ic('plus',14),sd?'Add to Someday':'Add to-do');
   const parts=[
     sd?h('span',{class:'dname'},'Someday'):h('span',{class:'dname'},d.toLocaleDateString('en-GB',{weekday:'long'})),
     h('span',{class:'ddate'},sd?'No date yet':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})),
@@ -2524,11 +2551,11 @@ function listDay(day,refresh){
   const doneLink=doneN?h('button',{class:'tdone-l',onclick:()=>{ showDoneDays.has(day)?showDoneDays.delete(day):showDoneDays.add(day); refresh(); }},showDoneDays.has(day)?'Hide done':doneN+' done · show'):null;
   if(adding){
     const inp=h('input',{class:'tinput autofocus',placeholder:sd?'Something to do one day':'New to-do  (try “3pm call studio”)','aria-label':'New to-do for '+(sd?'Someday':fmtLong(day))});
-    const add=v=>{ const pt=parseTime(v); const k={id:uid(),text:pt.text,time:pt.time,date:keyOf(day),done:false,created:Date.now(),order:list.length+1}; tasks().push(k); placeByTime(k); save(); };
+    const add=v=>newTask(day,list,v);
     let closing=false;
-    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); closing=true; const v=inp.value.trim(); if(v){ add(v); refresh(); } else { addingDay=null; refresh(); } } if(e.key==='Escape'){ closing=true; addingDay=null; refresh(); } });
-    inp.addEventListener('blur',()=>{ if(closing||!inp.isConnected) return; closing=true; const v=inp.value.trim(); addingDay=null; if(v) add(v); refresh(); });
-    sec.append(h('div',{class:'tadd-row'},inp)); setTimeout(()=>{ if(inp.isConnected) inp.focus(); },0);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); closing=true; const v=inp.value.trim(); if(v){ add(v); refresh(); focusAdd(); } else { addingDay=null; addingAfter=null; refresh(); } } if(e.key==='Escape'){ closing=true; addingDay=null; addingAfter=null; refresh(); } });
+    inp.addEventListener('blur',()=>{ if(closing||!inp.isConnected) return; closing=true; const v=inp.value.trim(); addingDay=null; if(v) add(v); addingAfter=null; refresh(); });
+    placeAdd(sec,h('div',{class:'tadd-row'},inp)); setTimeout(()=>{ if(inp.isConnected) inp.focus(); },0);
   } else if(list.length||sd||past) sec.append(doneLink?h('div',{class:'tfoot'},addBtn(false),doneLink):addBtn(false));
   else if(doneLink) sec.append(doneLink);
   return sec;
@@ -2595,7 +2622,7 @@ function viewHome(){
     h('div',{class:'wk-h'},
       h('h2',{},homeRange?'Your dates':'This week'),h('span',{class:'wk-r'},fmtRange(shownFrom,shownTo)),
       !homeRange&&dow>0?h('button',{class:'pp-edit wk-past',onclick:()=>{ S.ui.showPast=!showPast; save(); refresh(); }},showPast?'Hide past days':'Show past days'):null,
-      inR.length?h('span',{class:'wk-p'},`${done} of ${inR.length} done`):null,
+      inR.length&&!TODO_SIMPLE?h('span',{class:'wk-p'},`${done} of ${inR.length} done`):null,
       h('span',{style:{flex:1}}),
       h('div',{class:'wk-act'},
         homeRange?h('button',{class:'btn sm',onclick:()=>{ homeRange=null; refresh(); }},ic('x',14),'Back to this week')
@@ -2606,7 +2633,7 @@ function viewHome(){
         homeRange?rangeWeeks(from,to,refresh):week(ws),
         !homeRange&&exp?[h('div',{class:'wk-h'},h('h2',{},'Next week'),h('span',{class:'wk-r'},fmtRange(addDays(ws,7),addDays(ws,13)))),week(addDays(ws,7))]:null),
       h('aside',{class:'somedaycol'},listDay('someday',refresh),h('p',{class:'muted sdhint'},'No date yet. Drag one onto a day when you are ready.'))),
-    h('p',{class:'muted',style:{marginTop:'18px'}},'Unfinished to-dos move to the next day on their own. Drag the ⋮⋮ handle to move a to-do, or use ⋯ for time, repeat and steps. Start with a time to schedule it, like “3pm call studio”.')
+    h('p',{class:'muted',style:{marginTop:'18px'}},'Unfinished to-dos move to the next day on their own. Drag the ⋮⋮ handle to move a to-do, '+(TODO_SIMPLE?'or tap a to-do to edit it and press Enter to add one below it. ':'or use ⋯ for time, repeat and steps. ')+'Start with a time to schedule it, like “3pm call studio”.')
   );
 }
 
@@ -2655,8 +2682,8 @@ function viewReview(){
         h('button',{class:'icon-btn','aria-label':'Next week',onclick:()=>{ revWeek=addDays(ws,7); refresh(); }},ic('chevr',18)))),
     h('p',{class:'dateline',style:{marginBottom:'20px'}},(isThis?'This week · ':'')+fmtRange(ws,we)),
     h('div',{class:'stats'},
-      stat(`${done.length}/${Math.max(inW.length,done.length)}`,'to-dos done'),
-      h('div',{class:'stat'},h('b',{},pct+'%'),h('span',{},'complete'),h('i',{class:'bar'},h('i',{style:{width:pct+'%'}}))),
+      TODO_SIMPLE?null:stat(`${done.length}/${Math.max(inW.length,done.length)}`,'to-dos done'),
+      TODO_SIMPLE?null:h('div',{class:'stat'},h('b',{},pct+'%'),h('span',{},'complete'),h('i',{class:'bar'},h('i',{style:{width:pct+'%'}}))),
       stat(open.length,'still open',open.length?'warn':''),
       (()=>{ const c={Booking:0,Post:0,'To-do':0}; nwItems.forEach(x=>c[x.kind]++); const pl=(n,w)=>n+' '+w+(n===1?'':'s');
         return h('div',{class:'stat plan'},h('b',{},String(nwItems.length)),h('span',{},'things planned for next week'),h('small',{},[pl(c.Booking,'booking'),pl(c.Post,'post'),pl(c['To-do'],'to-do')].join(' · '))); })()),
@@ -2666,9 +2693,9 @@ function viewReview(){
         open.length?[h('div',{class:'tlist'},open.map(k=>taskItem(k,refresh))),
           h('div',{class:'row',style:{marginTop:'6px'}},h('button',{class:'btn sm',onclick:()=>{ open.forEach(k=>{ if(!k.recurId) moveTask(k,nws,()=>{}); }); refresh(); toast('Moved to next Monday'); }},'Move all to next Monday'),h('button',{class:'btn sm',onclick:()=>{ open.forEach(k=>{ if(!k.recurId) moveTask(k,'someday',()=>{}); }); refresh(); toast('Moved to Someday'); }},'Move all to Someday'))]
           :h('p',{class:'muted'},inW.length?'Everything is done. Nice week.':'No to-dos this week.')),
-      reps.length?h('section',{class:'card rv-rep'},h('h2',{},ic('refresh',16),'Repeating'),
+      reps.length&&!TODO_SIMPLE?h('section',{class:'card rv-rep'},h('h2',{},ic('refresh',16),'Repeating'),
         reps.map(({r,total,done})=>h('div',{class:'rep'},h('div',{class:'tx'},h('b',{},r.text),h('small',{},ruleLabel(r))),h('span',{class:'repn'+(done===total?' full':'')},`${done}/${total}`)))):null,
-      done.length?h('section',{class:'card rv-done'},h('h2',{},ic('check',16),'Done',h('span',{class:'cnt'},done.length)),
+      done.length&&!TODO_SIMPLE?h('section',{class:'card rv-done'},h('h2',{},ic('check',16),'Done',h('span',{class:'cnt'},done.length)),
         h('div',{class:'donelist'},done.map(k=>h('div',{class:'dl'},ic('check',13),h('span',{class:'dlt'},k.text),h('small',{},fmtDay(k.date)))))):null),
     h('div',{class:'wk-h'},h('h2',{},'Plan next week'),h('span',{class:'wk-r'},fmtRange(nws,addDays(nws,6))),h('span',{style:{flex:1}}),h('span',{class:'muted'},'Drag from Still open or Someday onto a day.')),
     h('div',{class:'homecols'},h('div',{class:'hmain'},weekList(nws,refresh)),h('aside',{class:'somedaycol'},listDay('someday',refresh)))
@@ -4389,7 +4416,7 @@ function openSettings(){
     h('div',{class:'msec'},h('h3',{},'Cloud sync'),h('p',{},SY.key?'This device is syncing with your sync key.':'Keep your phone and computer in sync.'),h('button',{class:'btn sm',onclick:openSync},ic('cloud',14),SY.key?'Sync settings':'Set up sync'),
       SY.key?(()=>{ const n=inlineImageCount(); const st=h('p',{class:'muted',style:{margin:'10px 0 0',fontSize:'13px'}},n?'Photos: '+n+' still inside pages, waiting to move to Storage.':'Photos: all saved in Storage.',IMG.failed?h('span',{style:{display:'block',color:'var(--danger)'}},'Last problem: '+IMG.failed):null);
         const btn=n?h('button',{class:'btn sm',style:{marginTop:'8px'},onclick:async()=>{ btn.disabled=true; btn.textContent='Moving…'; IMG.told=true; await uploadInlineImages(); openSettings(); }},'Move photos now'):null; return h('div',{},st,btn); })():null),
-    (()=>{ const box=h('div',{class:'msec'},h('h3',{},'Automatic backups'),h('p',{},'Evvspace saves a copy of everything on this device once a day and keeps the last 7 days.'));
+    (()=>{ const box=h('div',{class:'msec'},h('h3',{},'Automatic backups'),h('p',{},'Evvespace saves a copy of everything on this device once a day and keeps the last 7 days.'));
       const list=h('div',{class:'bk-list'},h('p',{class:'muted'},'Loading…')); box.append(list);
       listBackups().then(keys=>{ list.replaceChildren(...(keys.length?keys.map(k=>{ const d=String(k).slice(3); let armed=false; const b=h('button',{class:'btn sm',onclick:async()=>{ if(!armed){ armed=true; b.textContent='Click again to restore'; return; } const data=await readBackup(k); if(!data||!data.pages){ toast("That backup couldn't be read"); return; } const ui=S.ui; S=data; S.ui=ui||S.ui||{open:{},collapsed:{}}; migrate(); save(); closeModal(); R={v:'home'}; renderSidebar(); renderView(); toast('Restored the backup from '+fmtShort(d)); }},'Restore'); return h('div',{class:'bk-row'},h('span',{},fmtLong(d)),b); }):[h('p',{class:'muted'},'The first backup is made today.')])); });
       return box; })(),
